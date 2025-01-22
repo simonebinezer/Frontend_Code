@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         SONAR_PROJECT_KEY = 'React.js'
-        GITHUB_REPO = 'https://github.com/simonebinezer/React.js.git'
+        GITHUB_REPO = 'https://github.com/simonebinezer/Frontend_Code.git'
         SONAR_HOST_URL = 'http://54.189.47.219:9000'
         SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
         TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
@@ -22,7 +22,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Checking out code from GitHub...'
-                git branch: 'master', url: 'https://github.com/simonebinezer/React.js.git'
+                git branch: 'main', url: 'https://github.com/simonebinezer/React.js.git'
             }
         }
 
