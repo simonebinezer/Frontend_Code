@@ -1,11 +1,80 @@
 pipeline {
     agent any
+    environment {
+        SONAR_PROJECT_KEY = 'React.js'
+        GITHUB_REPO = 'https://github.com/simonebinezer/Frontend_Code.git'
+        SONAR_HOST_URL = 'http://54.189.47.219:9000'
+        SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
+        TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
+        TARGET_PATH = '/home/ec2-user/'
+        SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
+        ZIP_FILE_NAME = 'app.zip'
+    }
+
     stages {
-        stage('Verify zip') {
+        stage('Checkout Code') {
             steps {
-                sh 'which zip || echo "zip not found"'
-                sh 'zip -v || echo "zip command failed"'
+                echo 'Checking out code from GitHub...'
+                git branch: 'main', url: 'https://github.com/simonebinezer/React.js.git'
             }
+        }
+
+        stage('Check Zip Installation') {
+            steps {
+                script {
+                    echo 'Checking if zip is installed on the Jenkins server...'
+                    sh """
+                        if ! command -v zip &> /dev/null; then
+                            echo "Error: zip is not installed. Please install zip to continue." >&2
+                            exit 1
+                        fi
+                    """
+                }
+            }
+        }
+
+        stage('Archive and Transfer Zip File') {
+            steps {
+                timeout(time: 15, unit: 'MINUTES') { // Timeout for archiving and transfer
+                    script {
+                        // Archive only the src folder into a zip file
+                        echo "Archiving src folder into ${ZIP_FILE_NAME}..."
+                        sh """
+                            zip -r ${ZIP_FILE_NAME} src/
+                        """
+
+                        // Transfer the zip file to the target server
+                        echo "Transferring ${ZIP_FILE_NAME} to the target server..."
+                        sh """
+                            scp -v -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${ZIP_FILE_NAME} ${TARGET_SERVER}:${TARGET_PATH}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Extract File on Target Server') {
+            steps {
+                timeout(time: 15, unit: 'MINUTES') { // Timeout for extraction
+                    script {
+                        // Extract the zip file on the target server
+                        echo "Extracting ${ZIP_FILE_NAME} on the target server..."
+                        sh """
+                            ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${TARGET_SERVER} \
+                            'unzip -o ${TARGET_PATH}/${ZIP_FILE_NAME} -d ${TARGET_PATH} && rm -f ${TARGET_PATH}/${ZIP_FILE_NAME}'
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the logs for details.'
         }
     }
 }
