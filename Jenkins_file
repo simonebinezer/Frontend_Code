@@ -4,7 +4,7 @@ pipeline {
         SONARQUBE_SCANNER_HOME = tool(name: 'SonarQube_Scanner')
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js.git'
-        SONAR_HOST_URL = 'http://54.189.47.219:9000'
+        SONAR_HOST_URL = 'http://54.189.47.219:9888'
         SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
         TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
         TARGET_PATH = '/home/ec2-user/'
@@ -28,7 +28,7 @@ pipeline {
                         sh """
                             ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
                                 -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
-                                -Dsonar.projectName="React.js" \
+                                -Dsonar.projectName="App.Php" \
                                 -Dsonar.projectVersion="1.0" \
                                 -Dsonar.sources=. \
                                 -Dsonar.host.url="${SONAR_HOST_URL}" \
