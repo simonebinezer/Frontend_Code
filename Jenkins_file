@@ -1,6 +1,7 @@
 pipeline {
     agent any
     environment {
+        SONARQUBE_SCANNER_HOME = tool(name: 'SonarQube_Scanner')
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js.git'
         SONAR_HOST_URL = 'http://54.189.47.219:9000'
